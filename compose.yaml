@@ -1,0 +1,91 @@
+include:
+  - project_directory: ../api-layer
+    path: ../api-layer/compose.yaml
+  - project_directory: ../legacy
+    path: ../legacy/compose.yaml
+
+services:
+
+  nginx:
+    build: nginx
+    restart: always
+    environment:
+      - NGINX_HOST=meritokrat.org
+      - NGINX_PORT=80
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - meritokrat
+      - api-layer
+
+  postgres:
+    image: postgres:11.5
+    restart: always
+    volumes:
+      - postgres:/var/lib/postgresql/data
+
+  mysql:
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: yes
+    volumes:
+      - mysql:/var/lib/mysql
+
+  memcached:
+    image: memcached
+    restart: always
+    expose:
+      - 11211
+
+  redis:
+    image: redis
+    restart: always
+
+  redis-beta-8:
+    build:
+      context: redis-beta-8
+    restart: always
+
+  gdrive:
+    build: gdrive
+    volumes:
+      - ./gdrive/data:/root/.gdrive
+
+  backupper:
+    build: backupper
+    volumes:
+      - ./backupper/backupper.sh:/usr/local/bin/backupper
+#    image: alpine:latest
+    ports:
+      - "53682:53682"
+
+  minio:
+    image: quay.io/minio/aistor/minio:latest
+    container_name: aistor-server
+    command: minio server /mnt/data --license /minio.license
+    volumes:
+      - ./minio/data:/mnt/data
+      - ./minio/minio.license:/minio.license
+      - ./minio/certs:/etc/minio/certs
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+
+
+#  -p 9000:9000 -p 9001:9001                                \
+#  -v $HOME/minio/data:/mnt/data                            \
+#  -v $HOME/minio/minio.license:/minio.license              \
+#  -v $HOME/minio/certs:/etc/minio/certs                    \
+#  --name "aistor-server"                                   \
+#  quay.io/minio/aistor/minio:latest minio server /mnt/data --license /minio.license
+
+
+volumes:
+  postgres:
+  mysql:
