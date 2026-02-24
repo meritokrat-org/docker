@@ -1,3 +1,5 @@
 /.env
 /compose.override.yaml
-/backupper/rclone.conf
+/backupper/credentials.json
+/minio/certs
+/minio/data
