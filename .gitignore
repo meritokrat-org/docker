@@ -2,5 +2,5 @@
 /compose.override.yaml
 /backupper/credentials.json
 /minio/certs
-#/minio/data
-#/minio/data/.minio.sys
+/minio/data
+/.idea
